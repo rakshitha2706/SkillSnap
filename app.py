@@ -2,6 +2,9 @@ import os
 import json
 from flask import Flask, render_template, request, jsonify, send_file, session, redirect, url_for
 from flask_cors import CORS
+from flask_wtf.csrf import CSRFProtect, generate_csrf
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
 from groq import Groq
 from dotenv import load_dotenv
 import database
@@ -18,12 +21,78 @@ app = Flask(__name__)
 app.secret_key = os.getenv("SECRET_KEY", "super-secret-skillsnap-key-123")
 CORS(app, supports_credentials=True)
 
+# Initialize CSRF Protection
+csrf = CSRFProtect(app)
+
+# Initialize Rate Limiter
+limiter = Limiter(
+    app=app,
+    key_func=lambda: session.get('user_id', get_remote_address()),
+    default_limits=["200 per day", "50 per hour"],
+    storage_uri="memory://"
+)
+
 # Initialize database
 database.init_db()
 
+# ==================== ENV VALIDATION ====================
+def validate_environment():
+    """Validate required environment variables on startup."""
+    errors = []
+    
+    groq_api_key = os.getenv("GROQ_API_KEY", "").strip()
+    secret_key = os.getenv("SECRET_KEY", "").strip()
+    mongo_uri = os.getenv("MONGO_URI", "").strip()
+    
+    if not groq_api_key:
+        errors.append("❌ GROQ_API_KEY is not set in .env file")
+    else:
+        print("✓ GROQ_API_KEY is configured")
+    
+    if not secret_key or secret_key == "super-secret-skillsnap-key-123":
+        errors.append("⚠️  SECRET_KEY should be changed from default in .env file")
+    else:
+        print("✓ SECRET_KEY is configured")
+    
+    if not mongo_uri or mongo_uri == "mongodb://localhost:27017/":
+        print("⚠️  MONGO_URI not explicitly set, using default: mongodb://localhost:27017/")
+    else:
+        print(f"✓ MONGO_URI is configured as: {mongo_uri[:50]}...")
+    
+    if errors:
+        print("\n" + "="*60)
+        print("CONFIGURATION ERRORS:")
+        for error in errors:
+            print(f"  {error}")
+        print("="*60)
+        print("\nPlease create a .env file with the following variables:")
+        print("  GROQ_API_KEY=your_groq_api_key_here")
+        print("  SECRET_KEY=your_random_secret_key_here")
+        print("  MONGO_URI=mongodb://localhost:27017/ (or your MongoDB URI)")
+        print("="*60 + "\n")
+        raise RuntimeError("Missing required environment variables. Check .env configuration.")
+    
+    print("✓ All critical environment variables validated successfully!\n")
+
+# Validate environment on startup
+try:
+    validate_environment()
+except RuntimeError as e:
+    print(f"STARTUP ERROR: {e}")
+    exit(1)
+
 # Setup Groq Client
 groq_api_key = os.getenv("GROQ_API_KEY", "")
-client = Groq(api_key=groq_api_key) if groq_api_key else None
+if not groq_api_key:
+    print("ERROR: GROQ_API_KEY not found. Please check your .env file.")
+    client = None
+else:
+    try:
+        client = Groq(api_key=groq_api_key)
+        print("✓ Groq client initialized successfully")
+    except Exception as e:
+        print(f"ERROR: Failed to initialize Groq client: {e}")
+        client = None
 
 # Use a supported Groq model
 GROQ_MODEL = os.getenv("GROQ_MODEL", "llama-3.1-8b-instant")
@@ -36,6 +105,12 @@ def get_word_target(duration):
     except:
         return 500
 
+
+@app.route('/api/csrf-token', methods=['GET'])
+def get_csrf_token():
+    """Return CSRF token for AJAX requests"""
+    token = generate_csrf()
+    return jsonify({"csrf_token": token})
 
 @app.route('/')
 def landing():
@@ -53,6 +128,7 @@ def app_home():
 # ==================== AUTHENTICATION API ====================
 
 @app.route('/api/register', methods=['POST'])
+@limiter.limit("5 per minute")
 def register():
     data = request.json
     name = data.get('name', '').strip()
@@ -72,6 +148,7 @@ def register():
     return jsonify({"message": "Registration successful", "user_id": user_id})
 
 @app.route('/api/login', methods=['POST'])
+@limiter.limit("5 per minute")
 def login():
     data = request.json
     email = data.get('email', '').strip().lower()
@@ -96,6 +173,7 @@ def logout():
 # ==================== CORE API ====================
 
 @app.route('/api/generate-lesson', methods=['POST'])
+@limiter.limit("10 per hour")
 def generate_lesson():
     if 'user_id' not in session:
         return jsonify({"error": "Unauthorized"}), 401
@@ -176,6 +254,7 @@ Do NOT wrap in markdown. Do NOT use code blocks. Output only HTML as described a
 
 
 @app.route('/api/generate-quiz', methods=['POST'])
+@limiter.limit("10 per hour")
 def generate_quiz():
     if 'user_id' not in session:
         return jsonify({"error": "Unauthorized"}), 401
@@ -241,6 +320,7 @@ Lesson Text:
 
 
 @app.route('/api/evaluate', methods=['POST'])
+@limiter.limit("20 per hour")
 def evaluate():
     if 'user_id' not in session:
         return jsonify({"error": "Unauthorized"}), 401
@@ -282,6 +362,7 @@ def evaluate():
 
 
 @app.route('/api/clarify-doubt', methods=['POST'])
+@limiter.limit("20 per hour")
 def clarify_doubt():
     if 'user_id' not in session:
         return jsonify({"error": "Unauthorized"}), 401
@@ -315,6 +396,7 @@ Keep it to 2-3 short paragraphs. Be warm, encouraging, and clear.
 
 
 @app.route('/api/simplify', methods=['POST'])
+@limiter.limit("10 per hour")
 def simplify():
     """Generate a simpler re-explanation when the student scores poorly."""
     if 'user_id' not in session:
@@ -360,6 +442,7 @@ def dashboard():
 
 
 @app.route('/api/download-pdf', methods=['POST'])
+@limiter.limit("50 per day")
 def download_pdf():
     if 'user_id' not in session:
         return jsonify({"error": "Unauthorized"}), 401

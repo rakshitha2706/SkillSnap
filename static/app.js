@@ -14,8 +14,18 @@ document.addEventListener("DOMContentLoaded", () => {
         quizData: [],
         chartInstance: null,
         teacherChartInstance: null,
-        lastScore: null
+        lastScore: null,
+        csrfToken: ""
     };
+
+    // ==================== CSRF TOKEN INITIALIZATION ====================
+    // Fetch and store CSRF token on page load for all AJAX requests
+    fetch('/api/csrf-token')
+        .then(res => res.json())
+        .then(data => {
+            state.csrfToken = data.csrf_token;
+        })
+        .catch(err => console.error('Warning: CSRF token fetch failed', err));
 
     // ==================== SVG DEFS FOR RING GRADIENT ====================
     // Inject gradient def into SVG for score ring
@@ -101,7 +111,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
     document.getElementById('logout-btn')?.addEventListener('click', async () => {
         try {
-            await fetch('/api/logout', { method: 'POST' });
+            await fetch('/api/logout', { 
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': state.csrfToken
+                }
+            });
             window.location.href = '/';
         } catch (e) {
             console.error('Logout failed', e);
@@ -243,7 +258,10 @@ document.addEventListener("DOMContentLoaded", () => {
         try {
             const resp = await fetch('/api/generate-lesson', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': state.csrfToken
+                },
                 body: JSON.stringify({
                     topic: state.topic,
                     duration: state.time,
@@ -350,7 +368,10 @@ document.addEventListener("DOMContentLoaded", () => {
         try {
             const resp = await fetch('/api/clarify-doubt', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': state.csrfToken
+                },
                 body: JSON.stringify({ doubt, topic: state.topic, language: state.language })
             });
             const data = await resp.json();
@@ -411,7 +432,10 @@ document.addEventListener("DOMContentLoaded", () => {
         try {
             const resp = await fetch('/api/generate-quiz', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': state.csrfToken
+                },
                 body: JSON.stringify({ text: state.lessonText, topic: state.topic })
             });
             const data = await resp.json();
@@ -498,7 +522,10 @@ document.addEventListener("DOMContentLoaded", () => {
         try {
             const resp = await fetch('/api/evaluate', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': state.csrfToken
+                },
                 body: JSON.stringify({ results, topic: state.topic })
             });
             const data = await resp.json();
@@ -554,7 +581,10 @@ document.addEventListener("DOMContentLoaded", () => {
         try {
             const resp = await fetch('/api/simplify', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': state.csrfToken
+                },
                 body: JSON.stringify({ topic: state.topic, language: state.language })
             });
             const data = await resp.json();
@@ -574,7 +604,10 @@ document.addEventListener("DOMContentLoaded", () => {
         try {
             const resp = await fetch('/api/download-pdf', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': state.csrfToken
+                },
                 body: JSON.stringify({
                     topic: state.topic,
                     lessonText: state.lessonHTML

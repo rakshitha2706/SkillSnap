@@ -1,5 +1,15 @@
 document.addEventListener('DOMContentLoaded', () => {
     
+    let csrfToken = '';
+    
+    // Fetch and store CSRF token on page load
+    fetch('/api/csrf-token')
+        .then(res => res.json())
+        .then(data => {
+            csrfToken = data.csrf_token;
+        })
+        .catch(err => console.log('Warning: CSRF token fetch failed', err));
+    
     // Tab Switching
     const tabLogin = document.getElementById('tab-login');
     const tabRegister = document.getElementById('tab-register');
@@ -45,7 +55,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const res = await fetch('/api/login', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken
+                },
                 body: JSON.stringify({ email, password })
             });
             const data = await res.json();
@@ -82,7 +95,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const res = await fetch('/api/register', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken
+                },
                 body: JSON.stringify({ name, email, password })
             });
             const data = await res.json();

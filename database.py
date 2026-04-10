@@ -186,9 +186,9 @@ def get_dashboard_stats(user_id):
             if (sum(accs) / len(accs)) < 70:
                 weak_topics.append(t)
 
-    # Chart data (last 7 quizzes)
-    chart_scores = list(scores.find().sort("timestamp", 1).limit(7))
-    chart_data = [{"topic": s["topic"], "accuracy": s["accuracy"]} for s in chart_scores]
+    # Chart data (last 7 quizzes - FIXED: filter by user_id and sort descending)
+    chart_scores = list(scores.find({"user_id": str_uid}).sort("timestamp", -1).limit(7))
+    chart_data = [{"topic": s["topic"], "accuracy": s["accuracy"]} for s in reversed(chart_scores)]  # Reverse for chronological order on chart
 
     return {
         "total_time_mins": total_time,
