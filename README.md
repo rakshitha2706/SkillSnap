@@ -37,7 +37,7 @@ Whether you have 5, 10, or 15 minutes, you can simply speak your topic into the 
 
 Below is the end-to-end framework of SkillSnap AI, showcasing exactly how the MongoDB Database, Flask Backend, user Interface, and our Generative AI Models connect.
 
-![SkillSnap AI Architecture]()
+<img width="1189" height="673" alt="Screenshot 2026-04-11 141127" src="https://github.com/user-attachments/assets/c6cc63ff-2f5e-48a0-bf44-e98e06bac633" />
 
 
 ---
