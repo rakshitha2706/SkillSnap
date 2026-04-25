@@ -447,12 +447,25 @@ def generate_visual():
     data = request.json
     concept = data.get('concept', '')
     language = data.get('language', 'English')
+    duration = int(data.get('duration', 5))
 
     if not concept:
         return jsonify({"error": "No concept provided for visual generation."}), 400
 
+    # Adjust content depth based on duration
+    depth_directive = ""
+    if duration <= 5:
+        depth_directive = "Create a CONCISE overview. Provide 3 high-impact key points and a 2-paragraph analysis."
+    elif duration <= 10:
+        depth_directive = "Create a STANDARD depth lesson. Provide 6 technical key points and a 4-paragraph detailed analysis."
+    else:
+        depth_directive = "Create a MASTERCLASS depth lesson. Provide 10 expert-level key points, including advanced edge cases, and a 6-paragraph deep-dive technical analysis."
+
     prompt = f"""
 You are a Senior Educational Content Designer. Your goal is to create a high-depth, expert-level micro-lesson on '{concept}'. 
+
+DURATION: This is a {duration}-minute lesson. 
+GUIDELINE: {depth_directive}
 
 LANGUAGE REQUIREMENT: The lesson content (summary, key_points, title, deep_explanation) MUST BE WRITTEN IN {language}.
 {"SPECIAL TELUGU DIRECTIVE: Since the user requested Telugu, use natural, conversational, and colloquial Telugu (slang) that sounds like a friendly local mentor explaining it in person. Avoid overly formal or archaic textbook Telugu." if language == 'Telugu' else ""}
@@ -460,17 +473,15 @@ LANGUAGE REQUIREMENT: The lesson content (summary, key_points, title, deep_expla
 OUTPUT STRICTLY AS JSON using the format below. NO markdown formatting, NO extra text.
 {{
   "concept": "{concept}",
-  "summary": "A comprehensive 3-4 sentence high-level overview explaining the 'what' and 'why' in {language}.",
+  "summary": "A high-level overview explaining the 'what' and 'why' in {language}.",
   "key_points": [
     "Technical detail 1 in {language}",
-    "Technical detail 2 in {language}",
-    "Technical detail 3 in {language}",
-    "Technical detail 4 in {language}"
+    "..."
   ],
   "main_visual": {{
       "title": "Specific Lesson Diagram Title in {language}",
       "visual": "A precise, technical description of a diagram in ENGLISH (for the image generator).",
-      "deep_explanation": "A thorough 2-paragraph technical explanation in {language}."
+      "deep_explanation": "The technical deep-dive explanation in {language} matching the requested {duration}-minute depth."
   }},
   "suggested_audio": "educational voiceover text in {language}"
 }}

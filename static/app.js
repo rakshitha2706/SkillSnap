@@ -387,6 +387,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
             const langBadge = document.getElementById('lesson-lang-badge');
             if (langBadge) langBadge.textContent = state.language;
+            
+            const durationBadge = document.getElementById('lesson-duration-badge');
+            if (durationBadge) durationBadge.textContent = `${state.time} Mins`;
 
             // Reset doubt area
             const doubtInput = document.getElementById('doubt-input');
