@@ -112,7 +112,7 @@ def update_streak(user_id):
         }
     )
 
-def log_session(user_id, topic, duration, explanation):
+def log_session(user_id, topic, duration, explanation, session_type='lesson', parent_topic=None):
     """Logs a learning session to MongoDB."""
     sessions = get_collection('sessions')
     session = {
@@ -120,6 +120,8 @@ def log_session(user_id, topic, duration, explanation):
         "topic": topic,
         "duration": duration,
         "explanation": explanation,
+        "session_type": session_type,
+        "parent_topic": parent_topic,
         "timestamp": datetime.now()
     }
     sessions.insert_one(session)
@@ -163,7 +165,7 @@ def get_dashboard_stats(user_id):
     
     # Recent topics
     recent_sessions = list(sessions.find({"user_id": str_uid}).sort("timestamp", -1).limit(5))
-    recent_topics = [s['topic'] for s in recent_sessions]
+    recent_topics = [s['topic'] for s in recent_sessions if s.get('session_type') != 'revision']
 
     # Quiz stats
     all_scores = list(scores.find({"user_id": str_uid}))
@@ -199,3 +201,28 @@ def get_dashboard_stats(user_id):
         "streak_days": user.get('streak_days', 0),
         "concepts_learned": user.get('concepts_learned', 0)
     }
+
+
+def get_recent_lessons(user_id, limit=8):
+    """Return recent lessons/revisions for the user."""
+    sessions = get_collection('sessions')
+    str_uid = str(user_id)
+    recent_sessions = list(
+        sessions.find({"user_id": str_uid})
+        .sort("timestamp", -1)
+        .limit(limit)
+    )
+
+    history = []
+    for item in recent_sessions:
+        history.append({
+            "id": str(item.get("_id")),
+            "topic": item.get("topic", "Untitled Topic"),
+            "duration": item.get("duration", 0),
+            "session_type": item.get("session_type", "lesson"),
+            "parent_topic": item.get("parent_topic"),
+            "timestamp": item.get("timestamp").isoformat() if item.get("timestamp") else "",
+            "explanation": item.get("explanation", "")
+        })
+
+    return history

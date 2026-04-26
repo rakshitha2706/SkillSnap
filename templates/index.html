@@ -87,7 +87,7 @@
                         <div class="topic-input-group">
                             <i class="fa-solid fa-magnifying-glass input-icon"></i>
                             <input type="text" id="topic-input" placeholder="e.g., Quantum Physics, React Hooks, French Revolution..." autocomplete="off">
-                            <button id="topic-mic-btn" class="mic-input-btn" title="Voice input">
+                            <button type="button" id="topic-mic-btn" class="mic-input-btn" title="Voice input">
                                 <i class="fa-solid fa-microphone"></i>
                             </button>
                         </div>
@@ -172,6 +172,57 @@
                     <!-- Dynamic HTML injected here -->
                 </div>
 
+                <div class="memory-boost glass-panel mt-4" id="memory-boost-section">
+                    <div class="memory-header">
+                        <div>
+                            <h3><i class="fa-solid fa-sparkles text-accent"></i> Memory Boost</h3>
+                            <p>Keep the idea sticky with an AI-generated mnemonic.</p>
+                        </div>
+                        <button type="button" id="toggle-memory-styles-btn" class="primary-btn outline memory-toggle-btn">
+                            Change memory style
+                        </button>
+                    </div>
+
+                    <div class="memory-style-picker hidden" id="memory-style-picker">
+                        <button type="button" class="memory-style-btn active" data-style="story">🎭 Story Hook</button>
+                        <button type="button" class="memory-style-btn" data-style="acronym">🔤 Acronyms</button>
+                        <button type="button" class="memory-style-btn" data-style="rhyme">🎵 Rhymes</button>
+                        <button type="button" class="memory-style-btn" data-style="funny">😂 Funny Associations</button>
+                    </div>
+
+                    <div class="memory-meta">
+                        <span class="memory-chip" id="memory-selected-style">Story Hook</span>
+                        <span class="memory-chip recommended" id="memory-suggested-style">Recommended: Story Hook</span>
+                    </div>
+
+                    <div class="memory-card" id="memory-card">
+                        <div class="memory-loading hidden" id="memory-loading">
+                            <i class="fa-solid fa-spinner fa-spin"></i> Building your mnemonic...
+                        </div>
+                        <h4 id="memory-title">Memory hook</h4>
+                        <p id="memory-text">Your mnemonic will appear here after the lesson is generated.</p>
+                        <p class="memory-why" id="memory-why"></p>
+                    </div>
+                </div>
+
+                <div class="flashcards-panel glass-panel mt-4" id="flashcards-section">
+                    <div class="flashcards-header">
+                        <div>
+                            <h3><i class="fa-solid fa-layer-group text-accent"></i> Flashcards Mode</h3>
+                            <p>Turn the lesson into quick revision cards you can flip through.</p>
+                        </div>
+                        <button type="button" id="refresh-flashcards-btn" class="primary-btn outline flashcards-refresh-btn">
+                            Regenerate Cards
+                        </button>
+                    </div>
+                    <div class="flashcards-loading hidden" id="flashcards-loading">
+                        <i class="fa-solid fa-spinner fa-spin"></i> Building revision cards...
+                    </div>
+                    <div class="flashcards-grid" id="flashcards-grid">
+                        <!-- Dynamic flashcards -->
+                    </div>
+                </div>
+
                 <div class="doubt-section glass-panel mt-4">
                     <div class="doubt-header">
                         <h3><i class="fa-solid fa-circle-question text-accent"></i> Have a Doubt?</h3>
@@ -179,7 +230,7 @@
                     </div>
                     <div class="voice-input-group">
                         <input type="text" id="doubt-input" placeholder="Type your question here...">
-                        <button id="mic-btn" class="icon-btn voice-btn" title="Hold to speak">
+                        <button type="button" id="mic-btn" class="icon-btn voice-btn" title="Hold to speak">
                             <i class="fa-solid fa-microphone"></i>
                         </button>
                         <button id="submit-doubt-btn" class="primary-btn outline ask-btn">
@@ -265,6 +316,27 @@
                         <p id="simplification-text" class="simp-text">Generating a simpler explanation...</p>
                     </div>
 
+                    <div id="adaptive-revision-area" class="hidden mt-4 revision-card">
+                        <div class="revision-header">
+                            <div>
+                                <h4><i class="fa-solid fa-route text-accent"></i> Adaptive Revision Mode</h4>
+                                <p>We spotted weak points. Launch a focused 5-minute recovery lesson.</p>
+                            </div>
+                            <button type="button" class="primary-btn" id="start-revision-btn">
+                                Start Revision Sprint
+                            </button>
+                        </div>
+                        <div id="revision-loading" class="revision-loading hidden">
+                            <i class="fa-solid fa-spinner fa-spin"></i> Building your targeted revision...
+                        </div>
+                        <div id="revision-content" class="revision-content hidden">
+                            <h5 id="revision-title"></h5>
+                            <div class="revision-focus-list" id="revision-focus-list"></div>
+                            <div class="revision-body" id="revision-body"></div>
+                            <p class="revision-tip" id="revision-tip"></p>
+                        </div>
+                    </div>
+
                     <div class="result-actions mt-4 flex-col gap-2">
                         <button class="primary-btn w-full" id="download-pdf-btn">
                             <i class="fa-solid fa-file-pdf"></i> Download Snap-Note (PDF)
@@ -344,6 +416,18 @@
                         <ul id="recent-topics-list" class="topic-list recent-list">
                             <!-- Populated via JS -->
                         </ul>
+                    </div>
+                </div>
+
+                <div class="glass-panel lesson-history-panel mt-4">
+                    <div class="history-header">
+                        <div>
+                            <h3><i class="fa-solid fa-book-open text-accent"></i> Lesson History</h3>
+                            <p>Reopen lessons, revisit revision sprints, and continue where you left off.</p>
+                        </div>
+                    </div>
+                    <div id="lesson-history-list" class="lesson-history-list">
+                        <!-- Populated via JS -->
                     </div>
                 </div>
             </section>

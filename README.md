@@ -1,96 +1,106 @@
 <div align="center">
-  <h1>⚡ SkillSnap AI</h1>
-  <p><b>Adaptive micro-learning powered by AI, transforming small idle time into personalized learning.</b></p>
-  
+  <h1>SkillSnap AI</h1>
+  <p><b>Adaptive micro-learning powered by AI, turning small time gaps into personalized lessons.</b></p>
   <p><i>Built for the <b>Witchhunt Hackathon</b> by <b>Team Vertex</b></i></p>
 </div>
 
 ---
 
-## 👥 Team Vertex
+## Team Vertex
 - **Rakshitha Poshetty**
 - **Bommareddy Odithi Reddy**
 - **Nallari Ranga Sai Shivani**
 
 ---
 
-## 🚀 Overview
+## Overview
 
-In today's fast-paced world, finding time for continuous learning is tough. SkillSnap AI is a frictionless, micro-learning productivity app designed specifically for the solo-learner. It eliminates cognitive overload by generating perfectly tailored, time-constrained lessons in seconds.
+SkillSnap AI is a micro-learning app for solo learners. It generates short AI lessons for a chosen topic, supports voice input, reads lessons aloud, quizzes the learner, tracks progress, and exports a PDF summary.
 
-Whether you have 5, 10, or 15 minutes, you can simply speak your topic into the microphone, and SkillSnap AI will dynamically generate an optimized lesson, read it aloud to you, test your understanding, and provide a downloadable offline PDF.
-
----
-
-## ✨ Key Features
-
-- **⏱️ Time-Constrained Prompts:** Got 5 minutes? You get a high-level summary and an analogy. Got 15 minutes? You get detailed breakdowns and real-world case studies. The AI adjusts depth dynamically.
-- **🎙️ Frictionless Voice Input:** Integrated **Web Speech API** allows you to dictate your topics without typing.
-- **🎧 Text-to-Speech (TTS):** True hands-free learning; have your lessons narrated to you while you commute.
-- **🧠 Interactive Verification:** AI-generated 3-question quizzes automatically test your retention right after reading. 
-- **📈 Progress & Streaks:** Secure user authentication using MongoDB natively tracks your exact learning streaks, accuracy, and weak areas.
-- **📥 Snap-Notes (PDF Generation):** Click a button to instantly compile and download a rich `.pdf` of your lesson for offline archiving (powered by ReportLab).
+Whether you have 5, 10, or 15 minutes, you can enter or speak a topic, get an AI-generated lesson with a visual explanation, listen with text-to-speech, take a short quiz, and download a PDF summary.
 
 ---
 
-## 🏗️ Architecture
+## Key Features
 
-Below is the end-to-end framework of SkillSnap AI, showcasing exactly how the MongoDB Database, Flask Backend, user Interface, and our Generative AI Models connect.
-
-<img width="1189" height="673" alt="Screenshot 2026-04-11 141127" src="https://github.com/user-attachments/assets/c6cc63ff-2f5e-48a0-bf44-e98e06bac633" />
-
+- **Time-Constrained Lessons:** Lesson depth changes based on 5, 10, or 15 minutes.
+- **Voice Input:** Uses the browser Web Speech API for topic and doubt capture.
+- **Text-to-Speech:** Lessons can be read aloud in the selected language.
+- **Quiz Flow:** Generates a 3-question quiz from the lesson content.
+- **Dashboard Tracking:** Stores sessions, quiz accuracy, streaks, and weak topics in MongoDB.
+- **PDF Export:** Downloads a lesson summary as a PDF using ReportLab.
 
 ---
 
-## 💻 Tech Stack
+## Architecture
+
+SkillSnap uses:
+
+- Flask for the backend and routing
+- MongoDB for users, sessions, and quiz scores
+- Groq for lesson, quiz, doubt, and simplification generation
+- Vanilla HTML/CSS/JS for the UI
+- ReportLab for PDF export
+
+---
+
+## Tech Stack
 
 | Layer | Technologies Used |
 | :--- | :--- |
-| **Frontend UI** | HTML5, CSS3, Vanilla JS, Chart.js, Glassmorphism UI |
-| **Frontend Utilities**| Web Speech API (STT & TTS) |
+| **Frontend UI** | HTML5, CSS3, Vanilla JS, Chart.js |
+| **Frontend Utilities** | Web Speech API |
 | **Backend Core** | Python, Flask, Flask-CORS |
 | **Database** | MongoDB (`pymongo`) |
-| **Auth & Security** | Werkzeug Password Hashing, Flask Sessions |
-| **Generative AI** | Groq API (`llama-3.1-8b-instant`) |
-| **Offline Export** | `reportlab` (Dynamic PDF Generation) |
+| **Auth & Security** | Werkzeug Password Hashing, Flask Sessions, Flask-WTF, Flask-Limiter |
+| **Generative AI** | Groq API |
+| **Offline Export** | `reportlab` |
 
 ---
 
-## ⚙️ Installation & Workflow
+## Installation & Workflow
 
 ### 1. Requirements
 - Python 3.9+
-- MongoDB instance running locally (or a cloud cluster)
+- MongoDB instance running locally or in the cloud
 
 ### 2. Setup Guide
 
 ```bash
-# Clone the repository
 git clone https://github.com/your-username/skillsnap-ai.git
 cd skillsnap-ai
-
-# Install Python dependencies
 pip install -r requirements.txt
+```
 
-# Configure Environment Variables
-cp .env.example .env
-# Edit the .env file with your specific GROQ_API_KEY and MONGO_URI
+Create a `.env` file manually and add:
+
+```env
+GROQ_API_KEY=your_key_here
+SECRET_KEY=your_secret_here
+MONGO_URI=mongodb://localhost:27017/
 ```
 
 ### 3. Running the App
+
 ```bash
 python app.py
 ```
-Then, open your browser and navigate to `http://localhost:5000/`.
+
+Then open `http://localhost:5000/`.
 
 ---
 
-## 🗺️ Future Improvements
-- **Adaptive Pathways:** Trigger consecutive lessons based explicitly on the weak areas identified in a quiz.
-- **Vector Embeddings (RAG):** Integrate enterprise documentation to curate hyper-specialized training modules internally.
-- **Gamification:** Introduce a global leaderboard tracking total minute streaks across the platform.
+## Notes
 
-<br>
-<div align="center">
-  <i>"Turning idle time into continuous growth."</i>
-</div>
+- The active lesson flow uses the visual lesson generator route.
+- Browser speech features depend on browser support.
+- The `scratch/` folder was only for local experiments and is not part of the production app.
+
+---
+
+## Future Improvements
+
+- Adaptive review recommendations based on weak quiz topics
+- Lesson history and saved notes
+- Real automated tests for API routes and dashboard logic
+- Better fallback handling for image generation failures
